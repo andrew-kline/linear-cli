@@ -39,6 +39,7 @@ await snapshotTest({
       {
         queryName: "GetTeams",
         variables: { filter: undefined, first: 100, after: undefined },
+        variables: { filter: undefined, first: 100, after: undefined },
         response: {
           data: {
             teams: {
@@ -112,6 +113,10 @@ await snapshotTest({
                 hasNextPage: false,
                 endCursor: null,
               },
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
             },
           },
         },
@@ -143,6 +148,7 @@ await cliffySnapshotTest({
     const server = new MockLinearServer([
       {
         queryName: "GetTeams",
+        variables: { filter: undefined, first: 100, after: undefined },
         variables: { filter: undefined, first: 100, after: undefined },
         response: {
           data: {
@@ -235,11 +241,7 @@ await snapshotTest({
       // Second page
       {
         queryName: "GetTeams",
-        variables: {
-          filter: undefined,
-          first: 100,
-          after: "cursor-page-1-end",
-        },
+        variables: { filter: undefined, first: 100, after: "cursor-page-1-end" },
         response: {
           data: {
             teams: {
