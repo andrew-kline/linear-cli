@@ -20,10 +20,33 @@ export function formatIssueIdentifier(providedId: string): string {
   return providedId.toUpperCase()
 }
 
+/**
+ * Returns the first configured team key (for commands that only support one team).
+ */
 export function getTeamKey(): string | undefined {
   const teamId = getOption("team_id")
   if (teamId) {
+    if (Array.isArray(teamId)) {
+      return teamId[0]?.toUpperCase()
+    }
     return teamId.toUpperCase()
+  }
+  return undefined
+}
+
+/**
+ * Returns configured team keys as an array.
+ * Config can be set via:
+ * - TOML: team_id = "TEAM1" or team_id = ["TEAM1", "TEAM2"]
+ * - Env: LINEAR_TEAM_ID="TEAM1" or LINEAR_TEAM_ID="TEAM1,TEAM2"
+ */
+export function getTeamKeys(): string[] | undefined {
+  const teamId = getOption("team_id")
+  if (teamId) {
+    if (Array.isArray(teamId)) {
+      return teamId.map((t) => t.toUpperCase())
+    }
+    return [teamId.toUpperCase()]
   }
   return undefined
 }

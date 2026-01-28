@@ -8,7 +8,7 @@ import type {
 } from "../../__codegen__/graphql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { getTimeAgo, padDisplay } from "../../utils/display.ts"
-import { getTeamKey } from "../../utils/linear.ts"
+import { getTeamKeys } from "../../utils/linear.ts"
 import { getOption } from "../../config.ts"
 
 const GetProjects = gql(`
@@ -55,12 +55,16 @@ const GetProjects = gql(`
 export const listCommand = new Command()
   .name("list")
   .description("List projects")
-  .option("--team <team:string>", "Filter by team key")
+  .option(
+    "--team <team:string>",
+    "Filter by team key (can be specified multiple times)",
+    { collect: true },
+  )
   .option("--all-teams", "Show projects from all teams")
   .option("--status <status:string>", "Filter by status name")
   .option("-w, --web", "Open in web browser")
   .option("-a, --app", "Open in Linear.app")
-  .action(async ({ team, allTeams, status, web, app }) => {
+  .action(async ({ team: teams, allTeams, status, web, app }) => {
     if (web || app) {
       let workspace = getOption("workspace")
       if (!workspace) {
@@ -80,7 +84,10 @@ export const listCommand = new Command()
       }
 
       // Determine team to filter by for URL construction
-      const teamKey = allTeams ? null : (team?.toUpperCase() || getTeamKey())
+      // Note: Linear web UI only supports filtering by a single team, so we use
+      // the first team if multiple are provided, or fall back to configured teams
+      const cliTeamKeys = teams?.map((t) => t.toUpperCase())
+      const teamKey = allTeams ? null : (cliTeamKeys?.[0] || getTeamKeys()?.[0])
       const url = teamKey
         ? `https://linear.app/${workspace}/team/${teamKey}/projects/all`
         : `https://linear.app/${workspace}/projects/all`
@@ -96,19 +103,30 @@ export const listCommand = new Command()
 
     try {
       // Validate conflicting flags
-      if (team && allTeams) {
+      if (teams && teams.length > 0 && allTeams) {
         console.error("Cannot use both --team and --all-teams flags")
         Deno.exit(1)
       }
 
-      // Determine team to filter by
-      const teamKey = allTeams ? null : (team?.toUpperCase() || getTeamKey())
+      // Determine teams to filter by
+      const teamKeys = allTeams
+        ? null
+        : (teams && teams.length > 0
+          ? teams.map((t) => t.toUpperCase())
+          : getTeamKeys())
 
       let filter = {}
-      if (teamKey) {
-        filter = {
-          ...filter,
-          accessibleTeams: { some: { key: { eq: teamKey } } },
+      if (teamKeys && teamKeys.length > 0) {
+        if (teamKeys.length === 1) {
+          filter = {
+            ...filter,
+            accessibleTeams: { some: { key: { eq: teamKeys[0] } } },
+          }
+        } else {
+          filter = {
+            ...filter,
+            accessibleTeams: { some: { key: { in: teamKeys } } },
+          }
         }
       }
       if (status) {

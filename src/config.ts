@@ -131,9 +131,36 @@ function coerceBool(value: unknown): boolean | undefined {
 // Custom valibot schema for boolean coercion
 const BooleanLike = v.pipe(v.unknown(), v.transform(coerceBool))
 
+// Coerce to string or string array (supports TOML array or comma-separated env var)
+function coerceStringOrStringArray(
+  value: unknown,
+): string | string[] | undefined {
+  if (value == null) return undefined
+  if (Array.isArray(value)) {
+    const filtered = value.filter((v) => typeof v === "string")
+    return filtered.length > 0 ? filtered : undefined
+  }
+  if (typeof value === "string") {
+    // Check for comma-separated values (from env vars)
+    if (value.includes(",")) {
+      const parts = value.split(",").map((s) => s.trim()).filter((s) =>
+        s.length > 0
+      )
+      return parts.length > 0 ? parts : undefined
+    }
+    return value
+  }
+  return undefined
+}
+
+const StringOrStringArrayLike = v.pipe(
+  v.unknown(),
+  v.transform(coerceStringOrStringArray),
+)
+
 // Options schema
 const OptionsSchema = v.object({
-  team_id: v.optional(v.string()),
+  team_id: v.optional(StringOrStringArrayLike),
   api_key: v.optional(v.string()),
   workspace: v.optional(v.string()),
   issue_sort: v.optional(v.picklist(["manual", "priority"])),
