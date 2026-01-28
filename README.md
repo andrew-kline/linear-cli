@@ -206,13 +206,13 @@ linear completions     # generate shell completions
 
 the CLI supports configuration via environment variables or a `.linear.toml` config file. environment variables take precedence over config file values.
 
-| option          | env var                  | toml key          | example                    | description                           |
-| --------------- | ------------------------ | ----------------- | -------------------------- | ------------------------------------- |
-| Team ID         | `LINEAR_TEAM_ID`         | `team_id`         | `"ENG"`                    | default team for operations           |
-| Workspace       | `LINEAR_WORKSPACE`       | `workspace`       | `"mycompany"`              | workspace slug for web/app URLs       |
-| Issue sort      | `LINEAR_ISSUE_SORT`      | `issue_sort`      | `"priority"` or `"manual"` | how to sort issue lists               |
-| VCS             | `LINEAR_VCS`             | `vcs`             | `"git"` or `"jj"`          | version control system (default: git) |
-| Download images | `LINEAR_DOWNLOAD_IMAGES` | `download_images` | `true` or `false`          | download images when viewing issues   |
+| option          | env var                  | toml key          | example                                                 | description                           |
+| --------------- | ------------------------ | ----------------- | ------------------------------------------------------- | ------------------------------------- |
+| Team ID         | `LINEAR_TEAM_ID`         | `team_id`         | `"ENG","ENG2"` (env var) or [`"ENG"`,`"ENG2"`] (toml)  | default team(s) for operations        |
+| Workspace       | `LINEAR_WORKSPACE`       | `workspace`       | `"mycompany"`                                           | workspace slug for web/app URLs       |
+| Issue sort      | `LINEAR_ISSUE_SORT`      | `issue_sort`      | `"priority"` or `"manual"`                              | how to sort issue lists               |
+| VCS             | `LINEAR_VCS`             | `vcs`             | `"git"` or `"jj"`                                       | version control system (default: git) |
+| Download images | `LINEAR_DOWNLOAD_IMAGES` | `download_images` | `true` or `false`                                       | download images when viewing issues   |
 
 the config file can be placed at (checked in order, first found is used):
 
