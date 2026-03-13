@@ -102,7 +102,8 @@ you can also set the API key in a project's `.linear.toml`:
 ```toml
 api_key = "lin_api_..."
 workspace = "acme"
-team_id = "ENG"
+team_id = "ENG"                    # single team for create/start ops
+team_ids = ["ENG", "MOBILE"]       # multiple teams for list/filter ops
 ```
 
 this is useful for project-specific credentials but less secure than stored credentials since it may be committed to version control.

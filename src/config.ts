@@ -131,10 +131,10 @@ function coerceBool(value: unknown): boolean | undefined {
 // Custom valibot schema for boolean coercion
 const BooleanLike = v.pipe(v.unknown(), v.transform(coerceBool))
 
-// Coerce to string or string array (supports TOML array or comma-separated env var)
-function coerceStringOrStringArray(
+// Coerce to string array (supports TOML array or comma-separated env var)
+function coerceStringArray(
   value: unknown,
-): string | string[] | undefined {
+): string[] | undefined {
   if (value == null) return undefined
   if (Array.isArray(value)) {
     const filtered = value.filter((v) => typeof v === "string")
@@ -142,25 +142,23 @@ function coerceStringOrStringArray(
   }
   if (typeof value === "string") {
     // Check for comma-separated values (from env vars)
-    if (value.includes(",")) {
-      const parts = value.split(",").map((s) => s.trim()).filter((s) =>
-        s.length > 0
-      )
-      return parts.length > 0 ? parts : undefined
-    }
-    return value
+    const parts = value.split(",").map((s) => s.trim()).filter((s) =>
+      s.length > 0
+    )
+    return parts.length > 0 ? parts : undefined
   }
   return undefined
 }
 
-const StringOrStringArrayLike = v.pipe(
+const StringArrayLike = v.pipe(
   v.unknown(),
-  v.transform(coerceStringOrStringArray),
+  v.transform(coerceStringArray),
 )
 
 // Options schema
 const OptionsSchema = v.object({
-  team_id: v.optional(StringOrStringArrayLike),
+  team_id: v.optional(v.string()),
+  team_ids: v.optional(StringArrayLike),
   api_key: v.optional(v.string()),
   workspace: v.optional(v.string()),
   issue_sort: v.optional(v.picklist(["manual", "priority"])),

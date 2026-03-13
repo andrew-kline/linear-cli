@@ -12,7 +12,7 @@ import {
   fetchIssuesForState,
   getProjectIdByName,
   getProjectOptionsByName,
-  getTeamKey,
+  getTeamKeys,
   selectOption,
 } from "../../utils/linear.ts"
 import { openTeamAssigneeView } from "../../utils/actions.ts"
@@ -67,7 +67,8 @@ export const listCommand = new Command()
   )
   .option(
     "--team <team:string>",
-    "Team to list issues for (if not your default team)",
+    "Team to list issues for (can be specified multiple times)",
+    { collect: true },
   )
   .option(
     "--project <project:string>",
@@ -138,10 +139,13 @@ export const listCommand = new Command()
         console.error(`Sort must be one of: ${SortType.values().join(", ")}`)
         Deno.exit(1)
       }
-      const teamKey = team || getTeamKey()
-      if (!teamKey) {
+      // Get team keys from CLI flag or config
+      const teamKeys = (team && team.length > 0)
+        ? team.map((t) => t.toUpperCase())
+        : getTeamKeys()
+      if (!teamKeys || teamKeys.length === 0) {
         console.error(
-          "Could not determine team key from directory name or team flag.",
+          "Could not determine team key from configuration or team flag.",
         )
         Deno.exit(1)
       }
@@ -174,7 +178,7 @@ export const listCommand = new Command()
 
       try {
         const result = await fetchIssuesForState(
-          teamKey,
+          teamKeys,
           allStates ? undefined : stateArray,
           assignee,
           unassigned,

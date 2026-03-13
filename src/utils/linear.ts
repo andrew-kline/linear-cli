@@ -21,34 +21,30 @@ export function formatIssueIdentifier(providedId: string): string {
 }
 
 /**
- * Returns the first configured team key (for commands that only support one team).
+ * Returns the configured team key (for commands that only support one team).
+ * Uses team_id config option.
  */
 export function getTeamKey(): string | undefined {
   const teamId = getOption("team_id")
-  if (teamId) {
-    if (Array.isArray(teamId)) {
-      return teamId[0]?.toUpperCase()
-    }
-    return teamId.toUpperCase()
-  }
-  return undefined
+  return teamId?.toUpperCase()
 }
 
 /**
  * Returns configured team keys as an array.
+ * Prefers team_ids config, falls back to team_id.
  * Config can be set via:
- * - TOML: team_id = "TEAM1" or team_id = ["TEAM1", "TEAM2"]
- * - Env: LINEAR_TEAM_ID="TEAM1" or LINEAR_TEAM_ID="TEAM1,TEAM2"
+ * - TOML: team_id = "TEAM1" (single) or team_ids = ["TEAM1", "TEAM2"] (multiple)
+ * - Env: LINEAR_TEAM_ID="TEAM1" (single) or LINEAR_TEAM_IDS="TEAM1,TEAM2" (multiple)
  */
 export function getTeamKeys(): string[] | undefined {
-  const teamId = getOption("team_id")
-  if (teamId) {
-    if (Array.isArray(teamId)) {
-      return teamId.map((t) => t.toUpperCase())
-    }
-    return [teamId.toUpperCase()]
+  // Prefer team_ids for multi-team operations
+  const teamIds = getOption("team_ids")
+  if (teamIds && teamIds.length > 0) {
+    return teamIds.map((t) => t.toUpperCase())
   }
-  return undefined
+  // Fall back to single team_id
+  const teamId = getTeamKey()
+  return teamId ? [teamId] : undefined
 }
 
 /**
@@ -407,7 +403,7 @@ export async function fetchParentIssueData(parentId: string): Promise<
 }
 
 export async function fetchIssuesForState(
-  teamKey: string,
+  teamKeys: string | string[],
   state: string[] | undefined,
   assignee?: string,
   unassigned = false,
@@ -425,8 +421,11 @@ export async function fetchIssuesForState(
     Deno.exit(1)
   }
 
+  const teamKeysArray = Array.isArray(teamKeys) ? teamKeys : [teamKeys]
   const filter: IssueFilter = {
-    team: { key: { eq: teamKey } },
+    team: teamKeysArray.length === 1
+      ? { key: { eq: teamKeysArray[0] } }
+      : { key: { in: teamKeysArray } },
   }
 
   if (state) {

@@ -4,7 +4,7 @@ import { gql } from "../../__codegen__/gql.ts"
 import type { GetIssueLabelsQuery } from "../../__codegen__/graphql.ts"
 import { getGraphQLClient } from "../../utils/graphql.ts"
 import { padDisplay } from "../../utils/display.ts"
-import { getTeamKey } from "../../utils/linear.ts"
+import { getTeamKeys } from "../../utils/linear.ts"
 
 const GetIssueLabels = gql(`
   query GetIssueLabels($filter: IssueLabelFilter, $first: Int, $after: String) {
@@ -40,7 +40,8 @@ export const listCommand = new Command()
   .description("List issue labels")
   .option(
     "--team <teamKey:string>",
-    "Filter by team (e.g., TC). Shows team-specific labels only.",
+    "Filter by team (can be specified multiple times)",
+    { collect: true },
   )
   .option(
     "--workspace",
@@ -51,7 +52,7 @@ export const listCommand = new Command()
     "Show all labels (both workspace and team)",
   )
   .option("-j, --json", "Output as JSON")
-  .action(async ({ team: teamKey, workspace, all, json }) => {
+  .action(async ({ team: teams, workspace, all, json }) => {
     const { Spinner } = await import("@std/cli/unstable-spinner")
     const showSpinner = !json && Deno.stdout.isTerminal()
     const spinner = showSpinner ? new Spinner() : null
@@ -67,23 +68,42 @@ export const listCommand = new Command()
       if (workspace) {
         // Only workspace labels (no team)
         filter = { team: { null: true } }
-      } else if (teamKey) {
-        // Only labels for a specific team (includes workspace labels)
-        filter = {
-          or: [
-            { team: { key: { eq: teamKey.toUpperCase() } } },
-            { team: { null: true } },
-          ],
-        }
-      } else if (!all) {
-        // Default: use configured team if available, otherwise show all
-        const defaultTeam = getTeamKey()
-        if (defaultTeam) {
+      } else if (teams && teams.length > 0) {
+        // Filter by specified teams (includes workspace labels)
+        const teamKeys = teams.map((t) => t.toUpperCase())
+        if (teamKeys.length === 1) {
           filter = {
             or: [
-              { team: { key: { eq: defaultTeam } } },
+              { team: { key: { eq: teamKeys[0] } } },
               { team: { null: true } },
             ],
+          }
+        } else {
+          filter = {
+            or: [
+              { team: { key: { in: teamKeys } } },
+              { team: { null: true } },
+            ],
+          }
+        }
+      } else if (!all) {
+        // Default: use configured teams if available, otherwise show all
+        const defaultTeams = getTeamKeys()
+        if (defaultTeams && defaultTeams.length > 0) {
+          if (defaultTeams.length === 1) {
+            filter = {
+              or: [
+                { team: { key: { eq: defaultTeams[0] } } },
+                { team: { null: true } },
+              ],
+            }
+          } else {
+            filter = {
+              or: [
+                { team: { key: { in: defaultTeams } } },
+                { team: { null: true } },
+              ],
+            }
           }
         }
         // If no team configured and not --all, show all anyway
