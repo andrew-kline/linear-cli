@@ -1,0 +1,39 @@
+export const snapshot = {};
+
+snapshot[`Issue Relation List Command - Help Text 1`] = `
+stdout:
+"
+Usage: list [issueId]
+
+Description:
+
+  List relations for an issue
+
+Options:
+
+  -h, --help  - Show this help.  
+  -j, --json  - Output as JSON   
+
+"
+stderr:
+""
+`;
+
+snapshot[`Issue Relation List Command - With Relations 1`] = `
+stdout:
+"Relations for TEST-123:
+
+  → blocks      TEST-456    Fix login bug
+  ← relates to  TEST-789    Update auth flow
+"
+stderr:
+""
+`;
+
+snapshot[`Issue Relation List Command - No Relations 1`] = `
+stdout:
+"No relations found for TEST-123
+"
+stderr:
+""
+`;

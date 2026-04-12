@@ -1,0 +1,29 @@
+export const snapshot = {};
+
+snapshot[`Issue Relation Create Command - Help Text 1`] = `
+stdout:
+'
+Usage: create <issueId> <relatedIssueId> --type <type>
+
+Description:
+
+  Create a relation between two issues
+
+Options:
+
+  -h, --help          - Show this help.                                                      
+  -t, --type  <type>  - Relation type    (required, Values: \\x1b[32m"blocks"\\x1b[39m, \\x1b[32m"related"\\x1b[39m, \\x1b[32m"duplicate"\\x1b[39m,
+                                         \\x1b[32m"similar"\\x1b[39m)                                          
+
+'
+stderr:
+""
+`;
+
+snapshot[`Issue Relation Create Command - Success 1`] = `
+stdout:
+"✓ TEST-123 blocks TEST-456
+"
+stderr:
+""
+`;

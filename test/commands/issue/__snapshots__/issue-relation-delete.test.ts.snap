@@ -1,0 +1,28 @@
+export const snapshot = {};
+
+snapshot[`Issue Relation Delete Command - Help Text 1`] = `
+stdout:
+"
+Usage: delete <relationId>
+
+Description:
+
+  Delete an issue relation
+
+Options:
+
+  -h, --help     - Show this help.           
+  -y, --confirm  - Skip confirmation prompt  
+
+"
+stderr:
+""
+`;
+
+snapshot[`Issue Relation Delete Command - Success 1`] = `
+stdout:
+"✓ Deleted relation: TEST-123 blocks TEST-456
+"
+stderr:
+""
+`;
